@@ -1,10 +1,18 @@
 import AccordionPlaceAnalysis from "./ui/AccordionPlaceAnalysis";
 import AccordionCustomerAnalysis from "./ui/AccordionCustomerAnalysis";
 
-function SidebarLeft() {
+function SidebarLeft({
+  radiusState,
+  selectedIndustriesState,
+  showPlacesState,
+}) {
   return (
     <div id="sidebar-left">
-      <AccordionPlaceAnalysis />
+      <AccordionPlaceAnalysis
+        radiusState={radiusState}
+        selectedIndustriesState={selectedIndustriesState}
+        showPlacesState={showPlacesState}
+      />
       <AccordionCustomerAnalysis />
     </div>
   );

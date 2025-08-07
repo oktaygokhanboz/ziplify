@@ -1,4 +1,4 @@
-import { Card, Stack, Box } from "@mui/material";
+import { Card, Stack, Button } from "@mui/material";
 
 function PlaceTooltip({ info }) {
   const { object: place } = info;
@@ -25,6 +25,14 @@ function PlaceTooltip({ info }) {
         <div className="city-region">
           {place.city}, {place.region}
         </div>
+      </Stack>
+      <Stack className={"buttons"} spacing={1}>
+        <Button variant="outlined" size="small">
+          Show Trade Area
+        </Button>
+        <Button variant="outlined" size="small">
+          Show Home Zipcodes
+        </Button>
       </Stack>
     </Card>
   );
