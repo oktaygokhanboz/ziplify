@@ -20,13 +20,13 @@ function RadiusInput({ value, onChange }) {
       variant="outlined"
       type="number"
       fullWidth
-      margin="dense"
       value={value}
       onChange={onChange}
       InputProps={{
         startAdornment: <InputAdornment position="start">miles</InputAdornment>,
         inputProps: { min: 0 },
       }}
+      sx={{ mb: 1.5 }}
     />
   );
 }
@@ -67,7 +67,7 @@ function AccordionPlaceAnalysis({
         <FormControlLabel
           name="place-toggle"
           control={<Switch defaultChecked />}
-          label="Hide Places"
+          label={showPlaces ? "Hide Places" : "Show Places"}
           labelPlacement="start"
           checked={showPlaces}
           onChange={handlePlacesToggle}

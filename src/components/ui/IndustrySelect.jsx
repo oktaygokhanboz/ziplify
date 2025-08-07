@@ -12,7 +12,7 @@ const ITEM_PADDING_TOP = 8;
 const MenuProps = {
   PaperProps: {
     style: {
-      maxHeight: ITEM_HEIGHT * 5.25 + ITEM_PADDING_TOP,
+      maxHeight: ITEM_HEIGHT * 6.75 + ITEM_PADDING_TOP,
     },
   },
 };
@@ -22,6 +22,7 @@ function IndustrySelect({ selectedIndustriesState }) {
 
   let industries = competitors.map((c) => c.sub_category);
   industries = [...new Set(industries)];
+  industries = industries.filter((i) => i !== "");
 
   const handleIndustryChange = (e) => {
     const { value } = e.target;

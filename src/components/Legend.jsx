@@ -38,11 +38,11 @@ const tradeAreaContent = (
 );
 
 const homeZipCodesColor = {
-  low: "rgba(60, 140, 0, .2)",
-  lowMid: "rgba(60, 140, 0, .4)",
-  mid: "rgba(60, 140, 0, .6)",
-  midTop: "rgba(60, 140, 0, .8)",
-  top: "rgba(60, 140, 0, 1)",
+  low: "rgba(0, 140, 0, .20)",
+  lowMid: "rgba(0, 140, 0, .39)",
+  mid: "rgba(0, 140, 0, .57)",
+  midTop: "rgba(0, 140, 0, .74)",
+  top: "rgba(0, 140, 0, .9)",
 };
 
 const homeZipcodesContent = (

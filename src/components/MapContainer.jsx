@@ -1,5 +1,4 @@
 import { useRef, useState, useMemo, useCallback } from "react";
-import PropTypes from "prop-types";
 import { Map, useControl } from "react-map-gl/mapbox";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import { PolygonLayer, IconLayer } from "@deck.gl/layers";
@@ -8,37 +7,38 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import rawZipcodes from "../data/zipcodes.json";
 import competitors from "../data/competitors.json";
 import myPlace from "../data/myPlace.json";
+import homeZipcodes from "../data/homeZipcodes.json";
 
-// Constants
+// --- Constants ---
 const ICON_ATLAS = "/src/assets/location-icon-atlas.png";
 const ICON_MAPPING = "/src/data/location-icon-mapping.json";
 const COLORS = {
-  competitor: [255, 200, 160],
+  competitor: [255, 105, 0],
   myPlace: [0, 140, 0],
-  polygonFill: [60, 140, 0, 180],
+  polygonFill: [80, 180, 0, 180],
   polygonLine: [255, 255, 255],
 };
 
-// Utility to parse polygons
+// --- Utilities ---
 function parsePolygon(polygon) {
   return typeof polygon === "string" ? JSON.parse(polygon) : polygon;
 }
 
-// Memoized zipcodes data
-const memoizedZipcodes = rawZipcodes.map((zip) => ({
+// --- Data Preparation ---
+const zipcodes = rawZipcodes.map((zip) => ({
   ...zip,
   polygon: parsePolygon(zip.polygon),
 }));
 
-// DeckGL overlay component
+// --- DeckGL Overlay ---
 function DeckGLOverlay(props) {
   const overlay = useControl(() => new MapboxOverlay(props));
   overlay.setProps(props);
   return null;
 }
 
-// Polygon layer factory
-function getPolygonLayer(data) {
+// --- Layer Factories ---
+function createPolygonLayer(data, getFillColor) {
   return new PolygonLayer({
     id: "zipcodes",
     data,
@@ -46,7 +46,7 @@ function getPolygonLayer(data) {
       d.polygon.type === "Polygon"
         ? d.polygon.coordinates
         : d.polygon.coordinates.flat(),
-    getFillColor: COLORS.polygonFill,
+    getFillColor,
     getLineColor: COLORS.polygonLine,
     getLineWidth: 20,
     lineWidthMinPixels: 1,
@@ -54,15 +54,14 @@ function getPolygonLayer(data) {
   });
 }
 
-// Competitor icon layer factory
-function getCompetitorLayer({ data, onClick }) {
+function createIconLayer({ id, data, color, size, onClick }) {
   return new IconLayer({
-    id: "competitors",
+    id,
     data,
-    getColor: (d) => COLORS.competitor,
+    getColor: () => color,
     getIcon: () => "marker",
     getPosition: (d) => [d.longitude, d.latitude],
-    getSize: 24,
+    getSize: () => size,
     iconAtlas: ICON_ATLAS,
     iconMapping: ICON_MAPPING,
     pickable: true,
@@ -70,31 +69,34 @@ function getCompetitorLayer({ data, onClick }) {
   });
 }
 
-// My place icon layer factory
-function getMyPlaceLayer({ data, onClick }) {
-  return new IconLayer({
-    id: "my-place",
-    data,
-    getColor: COLORS.myPlace,
-    getIcon: () => "marker",
-    getPosition: (d) => [d.longitude, d.latitude],
-    getSize: 24,
-    iconAtlas: ICON_ATLAS,
-    iconMapping: ICON_MAPPING,
-    pickable: true,
-    onClick,
-  });
-}
-
+// --- Main Component ---
 export default function MapContainer({
   radius,
   selectedIndustries,
   showPlaces,
+  competitor,
 }) {
   const [tooltipInfo, setTooltipInfo] = useState(null);
   const mapRef = useRef();
 
-  // Memoized filtered competitor data
+  // --- Filtered Data ---
+  const filteredZipcodesData = useMemo(() => {
+    if (!competitor) return { zipCodes: [], customerPercentage: [] };
+
+    const selectedHomeZipcode = homeZipcodes.find(
+      (zip) => zip.pid === competitor.pid
+    );
+    const selectedZipcodes = selectedHomeZipcode?.locations.map(
+      (e) => Object.keys(e)[0]
+    );
+    const customerPercentage = selectedHomeZipcode?.locations.map(
+      (e) => Object.values(e)[0]
+    );
+
+    const zipCodes = zipcodes.filter((z) => selectedZipcodes?.includes(z.id));
+    return { zipCodes, customerPercentage };
+  }, [competitor]);
+
   const filteredCompetitors = useMemo(() => {
     return competitors.filter(
       (d) =>
@@ -106,45 +108,54 @@ export default function MapContainer({
     );
   }, [radius, selectedIndustries, showPlaces]);
 
-  // Memoized myPlace data
   const myPlaceData = useMemo(
     () => competitors.filter((d) => d.pid === myPlace.id),
     []
   );
 
-  // Handlers
-  const handlePinpointClick = useCallback((info) => {
-    setTooltipInfo(info);
-  }, []);
+  // --- Handlers ---
+  const handlePinpointClick = useCallback((info) => setTooltipInfo(info), []);
+  const handleMapMoveOrClick = useCallback(() => setTooltipInfo(null), []);
 
-  const handleMapMoveOrClick = useCallback(() => {
-    setTooltipInfo(null);
-  }, []);
+  // --- Layers ---
+  const polygonLayer = useMemo(() => {
+    const { zipCodes, customerPercentage } = filteredZipcodesData;
+    return createPolygonLayer(zipCodes, (d, { index }) => {
+      const percentage = customerPercentage?.[index];
+      if (percentage >= 0 && percentage < 4.5) return [0, 140, 0, 50];
+      if (percentage >= 4.5 && percentage < 25) return [0, 140, 0, 100];
+      if (percentage >= 25 && percentage < 29) return [0, 140, 0, 145];
+      if (percentage >= 29 && percentage < 32.6) return [0, 140, 0, 190];
+      if (percentage >= 32.6 && percentage < 45) return [0, 140, 0, 220];
+      return [0, 0, 0];
+    });
+  }, [filteredZipcodesData]);
 
-  // Memoized layers
-  const polygonLayer = useMemo(() => getPolygonLayer(memoizedZipcodes), []);
   const competitorLayer = useMemo(
     () =>
-      getCompetitorLayer({
+      createIconLayer({
+        id: "competitors",
         data: filteredCompetitors,
-        myPlaceId: myPlace.id,
+        color: COLORS.competitor,
         onClick: handlePinpointClick,
-        radius,
-        selectedIndustries,
-        showPlaces,
+        size: 24,
       }),
     [filteredCompetitors, handlePinpointClick]
   );
+
   const myPlaceLayer = useMemo(
     () =>
-      getMyPlaceLayer({
+      createIconLayer({
+        id: "my-place",
         data: myPlaceData,
-        myPlaceId: myPlace.id,
+        color: COLORS.myPlace,
         onClick: handlePinpointClick,
+        size: 32,
       }),
     [myPlaceData, handlePinpointClick]
   );
 
+  // --- Render ---
   return (
     <Map
       ref={mapRef}
@@ -163,13 +174,8 @@ export default function MapContainer({
       onMove={handleMapMoveOrClick}
       onClick={handleMapMoveOrClick}
     >
-      <DeckGLOverlay layers={[competitorLayer, myPlaceLayer]} />
+      <DeckGLOverlay layers={[polygonLayer, competitorLayer, myPlaceLayer]} />
       {tooltipInfo && <PlaceTooltip info={tooltipInfo} />}
     </Map>
   );
 }
-
-MapContainer.propTypes = {
-  radius: PropTypes.number,
-  selectedIndustries: PropTypes.arrayOf(PropTypes.string),
-};

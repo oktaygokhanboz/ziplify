@@ -10,12 +10,16 @@ import {
   FormControlLabel,
   Checkbox,
   Switch,
-  Autocomplete,
-  TextField,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import PlaceSelect from "./PlaceSelect";
 
-export default function AccordionCustomerAnalysis() {
+export default function AccordionCustomerAnalysis({
+  selectedOptionState,
+  competitorState,
+}) {
+  const [selectedOption, setSelectedOption] = selectedOptionState;
+
   return (
     <>
       <Accordion defaultExpanded>
@@ -29,69 +33,70 @@ export default function AccordionCustomerAnalysis() {
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Button variant="outlined">Trade Area</Button>
-          <Button variant="outlined">Home Zipcodes</Button>
-          <FormControl
-            sx={{ m: 3 }}
-            component="fieldset"
-            variant="standard"
-            fullWidth
-          >
-            <FormLabel component="legend">Persentile</FormLabel>
-            <FormGroup>
+          {/* Option Buttons */}
+          <div className="option-buttons">
+            <Button
+              variant={selectedOption === "trade" ? "contained" : "outlined"}
+              onClick={() => setSelectedOption("trade")}
+            >
+              Trade Area
+            </Button>
+            <Button
+              variant={selectedOption === "home" ? "contained" : "outlined"}
+              onClick={() => setSelectedOption("home")}
+            >
+              Home Zipcodes
+            </Button>
+          </div>
+
+          {/* Trade Area Inputs */}
+          {selectedOption === "trade" && (
+            <>
+              <FormControl
+                sx={{ mt: 4 }}
+                component="fieldset"
+                variant="standard"
+                fullWidth
+              >
+                <FormLabel component="legend" sx={{ mb: 1 }}>
+                  Persentile (%)
+                </FormLabel>
+                <FormGroup>
+                  <FormControlLabel
+                    control={<Checkbox checked={true} name="trade-area" />}
+                    label="%30"
+                  />
+                  <FormControlLabel
+                    control={<Checkbox checked={false} name="trade-area" />}
+                    label="%50"
+                  />
+                  <FormControlLabel
+                    control={<Checkbox checked={false} name="trade-area" />}
+                    label="%70"
+                  />
+                </FormGroup>
+              </FormControl>
               <FormControlLabel
-                control={<Checkbox checked={true} name="trade-area" />}
-                label="%30"
+                name="trade-area-toggle"
+                control={<Switch defaultChecked />}
+                label="Hide Trade Area"
+                labelPlacement="start"
               />
+            </>
+          )}
+
+          {/* Home Zipcodes Inputs */}
+          {selectedOption === "home" && (
+            <>
+              <PlaceSelect competitorState={competitorState} />
               <FormControlLabel
-                control={<Checkbox checked={false} name="trade-area" />}
-                label="%50"
+                name="home-zipcodes-toggle"
+                control={<Switch defaultChecked />}
+                label="Hide Home Zipcodes"
+                labelPlacement="start"
               />
-              <FormControlLabel
-                control={<Checkbox checked={false} name="trade-area" />}
-                label="%70"
-              />
-            </FormGroup>
-          </FormControl>
-          <FormControlLabel
-            name="trade-area-toggle"
-            control={<Switch defaultChecked />}
-            label="Hide Trade Area"
-            labelPlacement="start"
-          />
-          <Autocomplete
-            disablePortal
-            fullWidth
-            options={[
-              { label: "Option1" },
-              { label: "Option2" },
-              { label: "Option3" },
-              { label: "Option4" },
-              { label: "Option5" },
-              { label: "Option6" },
-              { label: "Option7" },
-              { label: "Option8" },
-              { label: "Option9" },
-            ]}
-            filterOptions={(options, state) => {
-              const filtered = options.filter((option) =>
-                option.label
-                  .toLowerCase()
-                  .includes(state.inputValue.toLowerCase())
-              );
-              return filtered.slice(0, 5);
-            }}
-            getOptionLabel={(option) => option.label}
-            renderInput={(params) => (
-              <TextField {...params} label="Place Name" />
-            )}
-          />
-          <FormControlLabel
-            name="home-zipcodes-toggle"
-            control={<Switch defaultChecked />}
-            label="Hide Home Zipcodes"
-            labelPlacement="start"
-          />
+            </>
+          )}
         </AccordionDetails>
       </Accordion>
     </>

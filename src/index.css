@@ -16,6 +16,16 @@ body {
   scrollbar-width: none;
 }
 
+#sidebar-left > * {
+  box-shadow: none;
+
+  label.MuiFormControlLabel-root:has(> .MuiSwitch-root) {
+    margin: 20px 0 0;
+    display: flex;
+    justify-content: space-between;
+  }
+}
+
 #legend {
   position: absolute;
   top: 16px;
@@ -68,4 +78,15 @@ body {
   .buttons {
     margin-top: 18px;
   }
+}
+
+.option-buttons {
+  display: flex;
+  column-gap: 16px;
+}
+
+.option-buttons > * {
+  display: flex;
+  flex-grow: 1;
+  text-transform: capitalize !important;
 }

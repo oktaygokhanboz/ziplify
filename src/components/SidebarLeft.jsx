@@ -5,6 +5,8 @@ function SidebarLeft({
   radiusState,
   selectedIndustriesState,
   showPlacesState,
+  selectedOptionState,
+  competitorState,
 }) {
   return (
     <div id="sidebar-left">
@@ -13,7 +15,10 @@ function SidebarLeft({
         selectedIndustriesState={selectedIndustriesState}
         showPlacesState={showPlacesState}
       />
-      <AccordionCustomerAnalysis />
+      <AccordionCustomerAnalysis
+        selectedOptionState={selectedOptionState}
+        competitorState={competitorState}
+      />
     </div>
   );
 }
