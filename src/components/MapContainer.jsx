@@ -8,10 +8,12 @@ import competitors from "../data/competitors.json";
 import myPlace from "../data/myPlace.json";
 import useHomeZipcodes from "../hooks/useHomeZipcodes.jsx";
 import useTradeArea from "../hooks/useTradeArea.jsx";
+import iconAtlas from "../assets/location-icon-atlas.png";
+import iconMapping from "../data/location-icon-mapping.json";
 
 // --- Constants ---
-const ICON_ATLAS = "/src/assets/location-icon-atlas.png";
-const ICON_MAPPING = "/src/data/location-icon-mapping.json";
+const ICON_ATLAS = iconAtlas;
+const ICON_MAPPING = iconMapping;
 const COLORS = {
   competitor: [255, 80, 0],
   myPlace: [0, 140, 0],
