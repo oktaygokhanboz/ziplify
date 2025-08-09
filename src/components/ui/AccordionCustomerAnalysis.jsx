@@ -12,13 +12,13 @@ import {
   Switch,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import PlaceSelect from "./PlaceSelect";
 
 export default function AccordionCustomerAnalysis({
   selectedOptionState,
-  competitorState,
+  showAreasState,
 }) {
   const [selectedOption, setSelectedOption] = selectedOptionState;
+  const [showAreas, setShowAreas] = showAreasState;
 
   return (
     <>
@@ -61,19 +61,26 @@ export default function AccordionCustomerAnalysis({
                 <FormLabel component="legend" sx={{ mb: 1 }}>
                   Persentile (%)
                 </FormLabel>
-                <FormGroup>
-                  <FormControlLabel
-                    control={<Checkbox checked={true} name="trade-area" />}
-                    label="%30"
-                  />
-                  <FormControlLabel
-                    control={<Checkbox checked={false} name="trade-area" />}
-                    label="%50"
-                  />
-                  <FormControlLabel
-                    control={<Checkbox checked={false} name="trade-area" />}
-                    label="%70"
-                  />
+                <FormGroup className="trade-area-checkboxes">
+                  {showAreas?.map((checked, index) => (
+                    <FormControlLabel
+                      key={index}
+                      control={
+                        <Checkbox
+                          checked={checked}
+                          name="trade-area"
+                          onChange={() =>
+                            setShowAreas((areas) => {
+                              const updated = [...areas];
+                              updated[index] = !updated[index];
+                              return updated;
+                            })
+                          }
+                        />
+                      }
+                      label={`%${30 + index * 20}`}
+                    />
+                  ))}
                 </FormGroup>
               </FormControl>
               <FormControlLabel
@@ -87,15 +94,12 @@ export default function AccordionCustomerAnalysis({
 
           {/* Home Zipcodes Inputs */}
           {selectedOption === "home" && (
-            <>
-              <PlaceSelect competitorState={competitorState} />
-              <FormControlLabel
-                name="home-zipcodes-toggle"
-                control={<Switch defaultChecked />}
-                label="Hide Home Zipcodes"
-                labelPlacement="start"
-              />
-            </>
+            <FormControlLabel
+              name="home-zipcodes-toggle"
+              control={<Switch defaultChecked />}
+              label="Hide Home Zipcodes"
+              labelPlacement="start"
+            />
           )}
         </AccordionDetails>
       </Accordion>

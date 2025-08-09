@@ -8,7 +8,7 @@ const tradeAreaColor = {
 
 const tradeAreaContent = (
   <>
-    <Typography component={"span"} fontSize={20} fontWeight={700}>
+    <Typography component={"span"} fontSize={18} fontWeight={700}>
       Trade Area
     </Typography>
     <ul>
@@ -47,7 +47,7 @@ const homeZipCodesColor = {
 
 const homeZipcodesContent = (
   <>
-    <Typography component={"span"} fontSize={20} fontWeight={700}>
+    <Typography component={"span"} fontSize={18} fontWeight={700}>
       Home Zipcode
     </Typography>
     <ul>

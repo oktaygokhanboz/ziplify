@@ -75,6 +75,7 @@ export default function MapContainer({
   selectedIndustries,
   showPlaces,
   competitor,
+  selectedOption,
 }) {
   const [tooltipInfo, setTooltipInfo] = useState(null);
   const mapRef = useRef();
@@ -82,7 +83,6 @@ export default function MapContainer({
   // --- Filtered Data ---
   const filteredZipcodesData = useMemo(() => {
     if (!competitor) return { zipCodes: [], customerPercentage: [] };
-
     const selectedHomeZipcode = homeZipcodes.find(
       (zip) => zip.pid === competitor.pid
     );
@@ -92,7 +92,6 @@ export default function MapContainer({
     const customerPercentage = selectedHomeZipcode?.locations.map(
       (e) => Object.values(e)[0]
     );
-
     const zipCodes = zipcodes.filter((z) => selectedZipcodes?.includes(z.id));
     return { zipCodes, customerPercentage };
   }, [competitor]);
@@ -116,6 +115,19 @@ export default function MapContainer({
   // --- Handlers ---
   const handlePinpointClick = useCallback((info) => setTooltipInfo(info), []);
   const handleMapMoveOrClick = useCallback(() => setTooltipInfo(null), []);
+  const getTooltip = useCallback(({ object }) => {
+    return (
+      object && {
+        html: `<span>${object.name}</span>`,
+        style: {
+          backgroundColor: "#fff",
+          fontSize: ".875rem",
+          fontWeight: "bold",
+          color: "#1976d2",
+        },
+      }
+    );
+  }, []);
 
   // --- Layers ---
   const polygonLayer = useMemo(() => {
@@ -138,7 +150,7 @@ export default function MapContainer({
         data: filteredCompetitors,
         color: COLORS.competitor,
         onClick: handlePinpointClick,
-        size: 24,
+        size: 20,
       }),
     [filteredCompetitors, handlePinpointClick]
   );
@@ -174,8 +186,13 @@ export default function MapContainer({
       onMove={handleMapMoveOrClick}
       onClick={handleMapMoveOrClick}
     >
-      <DeckGLOverlay layers={[polygonLayer, competitorLayer, myPlaceLayer]} />
-      {tooltipInfo && <PlaceTooltip info={tooltipInfo} />}
+      <DeckGLOverlay
+        layers={[polygonLayer, competitorLayer, myPlaceLayer]}
+        getTooltip={getTooltip}
+      />
+      {tooltipInfo && (
+        <PlaceTooltip info={tooltipInfo} selectedOption={selectedOption} />
+      )}
     </Map>
   );
 }
