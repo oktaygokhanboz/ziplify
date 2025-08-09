@@ -138,7 +138,7 @@ export default function MapContainer({
         return [0, 0, 0, 0];
       }
     );
-  }, [filteredTradeAreas]);
+  }, [filteredTradeAreas, selectedOption]);
 
   const polygonLayer = useMemo(() => {
     return createPolygonLayer("zipcodes", homeZipcodes, (d, { index }) => {
@@ -151,7 +151,7 @@ export default function MapContainer({
       if (percentage >= 32.6 && percentage < 45) return [49, 163, 84, 128];
       return [0, 0, 0, 0];
     });
-  }, [homeZipcodes]);
+  }, [homeZipcodes, selectedOption]);
 
   const competitorLayer = useMemo(
     () =>
@@ -197,7 +197,11 @@ export default function MapContainer({
       onClick={handleMapMoveOrClick}
     >
       <DeckGLOverlay
-        layers={[tradeAreasLayer, polygonLayer, competitorLayer, myPlaceLayer]}
+        layers={[
+          selectedOption === "trade" ? tradeAreasLayer : polygonLayer,
+          competitorLayer,
+          myPlaceLayer,
+        ]}
         getTooltip={getTooltip}
       />
       {tooltipInfo && (
