@@ -9,11 +9,13 @@ body {
   display: grid;
   grid-template-columns: 1fr 4fr;
   position: relative;
+  overflow: hidden;
 }
 
 #sidebar-left {
   overflow: hidden scroll;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc white;
 }
 
 #sidebar-left > * {
@@ -42,15 +44,15 @@ body {
   li {
     display: flex;
     align-items: center;
-    margin: 6px 0;
+    margin: 10px 0;
   }
 
   .indicator {
     display: inline-block;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    margin-right: 8px;
+    width: 18px;
+    height: 18px;
+    border-radius: 2px;
+    margin-right: 12px;
   }
 }
 
@@ -75,8 +77,9 @@ body {
     line-height: 1.2;
   }
 
-  .buttons {
+  .button {
     margin-top: 18px;
+    width: 100%;
   }
 }
 
@@ -89,4 +92,10 @@ body {
   display: flex;
   flex-grow: 1;
   text-transform: capitalize !important;
+}
+
+.MuiFormGroup-root.trade-area-checkboxes {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }

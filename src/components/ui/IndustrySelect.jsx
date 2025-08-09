@@ -5,6 +5,7 @@ import FormControl from "@mui/material/FormControl";
 import ListItemText from "@mui/material/ListItemText";
 import Select from "@mui/material/Select";
 import Checkbox from "@mui/material/Checkbox";
+import { Button } from "@mui/material";
 import competitors from "../../data/competitors.json";
 
 const ITEM_HEIGHT = 48;
@@ -30,26 +31,37 @@ function IndustrySelect({ selectedIndustriesState }) {
   };
 
   return (
-    <FormControl fullWidth>
-      <InputLabel id="multiple-industry-label">Industry</InputLabel>
-      <Select
-        labelId="industries-label"
-        id="industries"
-        multiple
-        value={selectedIndustries}
-        onChange={handleIndustryChange}
-        input={<OutlinedInput label="Industry" />}
-        renderValue={(selected) => selected.join(", ")}
-        MenuProps={MenuProps}
+    <>
+      <FormControl fullWidth>
+        <InputLabel id="multiple-industry-label">Industry</InputLabel>
+        <Select
+          labelId="industries-label"
+          id="industries"
+          multiple
+          value={selectedIndustries}
+          onChange={handleIndustryChange}
+          input={<OutlinedInput label="Industry" />}
+          renderValue={(selected) => selected.join(", ")}
+          MenuProps={MenuProps}
+        >
+          {industries.map((industry) => (
+            <MenuItem key={industry} value={industry}>
+              <Checkbox checked={selectedIndustries.includes(industry)} />
+              <ListItemText primary={industry} />
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <Button
+        sx={{ mt: 1, textTransform: "capitalize" }}
+        variant="outlined"
+        size="small"
+        onClick={() => setSelectedIndustries([])}
+        disabled={selectedIndustries.length === 0}
       >
-        {industries.map((industry) => (
-          <MenuItem key={industry} value={industry}>
-            <Checkbox checked={selectedIndustries.includes(industry)} />
-            <ListItemText primary={industry} />
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
+        Clear Industries
+      </Button>
+    </>
   );
 }
 

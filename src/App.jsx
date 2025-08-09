@@ -8,7 +8,7 @@ function App() {
   const [selectedIndustries, setSelectedIndustries] = useState([]);
   const [showPlaces, setShowPlaces] = useState(true);
   const [selectedOption, setSelectedOption] = useState("trade");
-  const [competitor, setCompetitor] = useState(null);
+  const [showAreas, setShowAreas] = useState([true, true, true]);
 
   return (
     <div id="dashboard">
@@ -17,15 +17,16 @@ function App() {
         selectedIndustriesState={[selectedIndustries, setSelectedIndustries]}
         showPlacesState={[showPlaces, setShowPlaces]}
         selectedOptionState={[selectedOption, setSelectedOption]}
-        competitorState={[competitor, setCompetitor]}
+        showAreasState={[showAreas, setShowAreas]}
       />
       <MapContainer
         radius={radius}
         selectedIndustries={selectedIndustries}
         showPlaces={showPlaces}
-        competitor={competitor}
+        selectedOption={selectedOption}
+        showAreas={showAreas}
       />
-      <Legend />
+      <Legend selectedOptionState={[selectedOption, setSelectedOption]} />
     </div>
   );
 }

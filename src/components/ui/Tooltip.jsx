@@ -1,6 +1,11 @@
-import { Card, Stack, Button } from "@mui/material";
+import { Card, Stack, Button, Tooltip } from "@mui/material";
 
-function PlaceTooltip({ info }) {
+function PlaceTooltip({
+  info,
+  selectedOption,
+  handleTradeAreasClick,
+  handleZipcodesClick,
+}) {
   const { object: place } = info;
   return (
     <Card
@@ -26,14 +31,47 @@ function PlaceTooltip({ info }) {
           {place.city}, {place.region}
         </div>
       </Stack>
-      <Stack className={"buttons"} spacing={1}>
-        <Button variant="outlined" size="small">
-          Show Trade Area
-        </Button>
-        <Button variant="outlined" size="small">
-          Show Home Zipcodes
-        </Button>
-      </Stack>
+      {selectedOption === "trade" ? (
+        <Tooltip
+          title={
+            !place.trade_area_activity &&
+            "Trade area data is not available for this place."
+          }
+          arrow
+        >
+          <div>
+            <Button
+              className="button"
+              variant="outlined"
+              size="small"
+              disabled={!place.trade_area_activity}
+              onClick={() => handleTradeAreasClick(place.pid)}
+            >
+              Show Trade Area
+            </Button>
+          </div>
+        </Tooltip>
+      ) : (
+        <Tooltip
+          title={
+            !place.home_locations_activity &&
+            "Home zipcodes data is not available for this place."
+          }
+          arrow
+        >
+          <div>
+            <Button
+              className="button"
+              variant="outlined"
+              size="small"
+              disabled={!place.home_locations_activity}
+              onClick={() => handleZipcodesClick(place.pid)}
+            >
+              Show Home Zipcodes
+            </Button>
+          </div>
+        </Tooltip>
+      )}
     </Card>
   );
 }

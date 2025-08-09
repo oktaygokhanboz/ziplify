@@ -4,31 +4,20 @@ import { MapboxOverlay } from "@deck.gl/mapbox";
 import { PolygonLayer, IconLayer } from "@deck.gl/layers";
 import { PlaceTooltip } from "./ui/Tooltip";
 import "mapbox-gl/dist/mapbox-gl.css";
-import rawZipcodes from "../data/zipcodes.json";
 import competitors from "../data/competitors.json";
 import myPlace from "../data/myPlace.json";
-import homeZipcodes from "../data/homeZipcodes.json";
+import useHomeZipcodes from "../hooks/useHomeZipcodes.jsx";
+import useTradeArea from "../hooks/useTradeArea.jsx";
 
 // --- Constants ---
 const ICON_ATLAS = "/src/assets/location-icon-atlas.png";
 const ICON_MAPPING = "/src/data/location-icon-mapping.json";
 const COLORS = {
-  competitor: [255, 105, 0],
+  competitor: [255, 80, 0],
   myPlace: [0, 140, 0],
   polygonFill: [80, 180, 0, 180],
   polygonLine: [255, 255, 255],
 };
-
-// --- Utilities ---
-function parsePolygon(polygon) {
-  return typeof polygon === "string" ? JSON.parse(polygon) : polygon;
-}
-
-// --- Data Preparation ---
-const zipcodes = rawZipcodes.map((zip) => ({
-  ...zip,
-  polygon: parsePolygon(zip.polygon),
-}));
 
 // --- DeckGL Overlay ---
 function DeckGLOverlay(props) {
@@ -37,10 +26,9 @@ function DeckGLOverlay(props) {
   return null;
 }
 
-// --- Layer Factories ---
-function createPolygonLayer(data, getFillColor) {
+function createPolygonLayer(id, data, getFillColor) {
   return new PolygonLayer({
-    id: "zipcodes",
+    id,
     data,
     getPolygon: (d) =>
       d.polygon.type === "Polygon"
@@ -74,28 +62,15 @@ export default function MapContainer({
   radius,
   selectedIndustries,
   showPlaces,
-  competitor,
+  selectedOption,
+  showAreas,
 }) {
   const [tooltipInfo, setTooltipInfo] = useState(null);
   const mapRef = useRef();
-
-  // --- Filtered Data ---
-  const filteredZipcodesData = useMemo(() => {
-    if (!competitor) return { zipCodes: [], customerPercentage: [] };
-
-    const selectedHomeZipcode = homeZipcodes.find(
-      (zip) => zip.pid === competitor.pid
-    );
-    const selectedZipcodes = selectedHomeZipcode?.locations.map(
-      (e) => Object.keys(e)[0]
-    );
-    const customerPercentage = selectedHomeZipcode?.locations.map(
-      (e) => Object.values(e)[0]
-    );
-
-    const zipCodes = zipcodes.filter((z) => selectedZipcodes?.includes(z.id));
-    return { zipCodes, customerPercentage };
-  }, [competitor]);
+  const { homeZipcodes, percentages, getZipcodes, clearZipcodes } =
+    useHomeZipcodes();
+  const { tradeAreas, setTradeAreas, getTradeAreas, clearTradeAreas } =
+    useTradeArea();
 
   const filteredCompetitors = useMemo(() => {
     return competitors.filter(
@@ -116,20 +91,67 @@ export default function MapContainer({
   // --- Handlers ---
   const handlePinpointClick = useCallback((info) => setTooltipInfo(info), []);
   const handleMapMoveOrClick = useCallback(() => setTooltipInfo(null), []);
+  const getTooltip = useCallback(({ object }) => {
+    return (
+      object && {
+        html: `<span>${
+          object.name || object.id || "%" + object.trade_area + " Trade Area"
+        }</span>`,
+        style: {
+          backgroundColor: "#fff",
+          fontSize: ".875rem",
+          fontWeight: "bold",
+          color: "#1976d2",
+        },
+      }
+    );
+  }, []);
+
+  const handleGetZipcodesClick = (pid) => {
+    getZipcodes(pid);
+  };
+
+  const handleGetTradeAreasClick = (pid) => {
+    getTradeAreas(pid);
+  };
 
   // --- Layers ---
+  const filteredTradeAreas = useMemo(() => {
+    const [show30, show50, show70] = showAreas;
+    const checkboxes = {
+      30: show30,
+      50: show50,
+      70: show70,
+    };
+    return (tradeAreas || []).filter((area) => checkboxes[area.trade_area]);
+  }, [tradeAreas, showAreas]);
+
+  const tradeAreasLayer = useMemo(() => {
+    return createPolygonLayer(
+      "trade-areas",
+      filteredTradeAreas,
+      (d, { index }) => {
+        const area = filteredTradeAreas?.[index]?.trade_area;
+        if (area === 30) return [0, 0, 0, 76.5];
+        if (area === 50) return [0, 0, 0, 127.5];
+        if (area === 70) return [0, 0, 0, 178.5];
+        return [0, 0, 0, 0];
+      }
+    );
+  }, [filteredTradeAreas]);
+
   const polygonLayer = useMemo(() => {
-    const { zipCodes, customerPercentage } = filteredZipcodesData;
-    return createPolygonLayer(zipCodes, (d, { index }) => {
-      const percentage = customerPercentage?.[index];
-      if (percentage >= 0 && percentage < 4.5) return [0, 140, 0, 50];
-      if (percentage >= 4.5 && percentage < 25) return [0, 140, 0, 100];
-      if (percentage >= 25 && percentage < 29) return [0, 140, 0, 145];
-      if (percentage >= 29 && percentage < 32.6) return [0, 140, 0, 190];
-      if (percentage >= 32.6 && percentage < 45) return [0, 140, 0, 220];
-      return [0, 0, 0];
+    return createPolygonLayer("zipcodes", homeZipcodes, (d, { index }) => {
+      console.log(homeZipcodes);
+      const percentage = percentages?.[index];
+      if (percentage >= 0 && percentage < 4.5) return [227, 74, 51, 128];
+      if (percentage >= 4.5 && percentage < 25) return [253, 187, 132, 128];
+      if (percentage >= 25 && percentage < 29) return [247, 252, 185, 128];
+      if (percentage >= 29 && percentage < 32.6) return [173, 221, 142, 128];
+      if (percentage >= 32.6 && percentage < 45) return [49, 163, 84, 128];
+      return [0, 0, 0, 0];
     });
-  }, [filteredZipcodesData]);
+  }, [homeZipcodes]);
 
   const competitorLayer = useMemo(
     () =>
@@ -138,7 +160,7 @@ export default function MapContainer({
         data: filteredCompetitors,
         color: COLORS.competitor,
         onClick: handlePinpointClick,
-        size: 24,
+        size: 20,
       }),
     [filteredCompetitors, handlePinpointClick]
   );
@@ -174,8 +196,20 @@ export default function MapContainer({
       onMove={handleMapMoveOrClick}
       onClick={handleMapMoveOrClick}
     >
-      <DeckGLOverlay layers={[polygonLayer, competitorLayer, myPlaceLayer]} />
-      {tooltipInfo && <PlaceTooltip info={tooltipInfo} />}
+      <DeckGLOverlay
+        layers={[tradeAreasLayer, polygonLayer, competitorLayer, myPlaceLayer]}
+        getTooltip={getTooltip}
+      />
+      {tooltipInfo && (
+        <PlaceTooltip
+          info={tooltipInfo}
+          selectedOption={selectedOption}
+          handleTradeAreasClick={handleGetTradeAreasClick}
+          handleZipcodesClick={handleGetZipcodesClick}
+        />
+      )}
     </Map>
   );
 }
+
+export { useHomeZipcodes };
